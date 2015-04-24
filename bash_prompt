@@ -1,0 +1,57 @@
+RC="\033[0;31m"
+CC="\033[0;36m"
+GC="\033[0;32m"
+R="\033[00m"
+
+_parse_git_dirty() {
+  if [[ -z "$(git status -s 2> /dev/null)" ]]; then
+    printf "${GC}✔${R}"
+  else
+    printf "${RC}✗${R}"
+  fi
+}
+
+_parse_git_branch() {
+  git rev-parse --is-inside-work-tree &>/dev/null || return
+  printf " $(git rev-parse --abbrev-ref HEAD)[git]$(_parse_git_dirty)"
+}
+
+_rprompt() {
+  local _time=$1
+  (( $_time < 5 )) && return
+  local _out
+  local days=$(( $_time / 60 / 60 / 24 ))
+  local hours=$(( $_time / 60 / 60 % 24 ))
+  local minutes=$(( $_time / 60 % 60 ))
+  local seconds=$(( $_time % 60 ))
+  (( $days > 0 )) && _out="${days}d"
+  (( $hours > 0 )) && _out="$_out ${hours}h"
+  (( $minutes > 0 )) && _out="$_out ${minutes}m"
+  _out="$_out ${seconds}s"
+  printf "${RC}$_out${R}"
+}
+
+prompt() {
+    (( $? == 0 )) && color=${CC} || color=${RC}
+
+    local _total_time=$(( $(date +%s) - _start_time ));
+    unset _start_time
+
+    _top_row="\[${GC}\]\W\[${R}\]$(_parse_git_branch)\[${R}\]"
+    [[ "$SSH_CONNECTION" != '' ]] && \
+      _top_row="\[${CC}\]\u\[${R}\]@\[${RC}\]\h\[${R}\]:${_top_row}"
+
+    _bottom_row="\[${color}\]❯\[${R}\] "
+
+    PS1="${_top_row}\$(_rprompt $_total_time)\n${_bottom_row}"
+}
+
+_log_start() {
+  [[ "$BASH_COMMAND" == "$PROMPT_COMMAND" ]] && return
+  [[ -n "$COMP_LINE" ]] && return
+  _start_time=$(date +%s)
+}
+
+trap '_log_start' DEBUG
+PROMPT_COMMAND=prompt
+PS2="\[$RC\]→ \[$R\]"
