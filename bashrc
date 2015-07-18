@@ -29,5 +29,6 @@ fi
 alias g='git'
 alias ll='ls --group-directories-first -AlFh'
 alias l='ls --group-directories-first -lFh'
+alias c='pygmentize -O style=monokai -f console256 -g'
 
 [ -f "$HOME/.bash_prompt" ] && . "$HOME/.bash_prompt"

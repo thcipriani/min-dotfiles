@@ -1,10 +1,12 @@
+USERC="\033[1m\033[91m"
+HOSTC="\033[38;5;172m"
 RC="\033[0;31m"
 CC="\033[0;36m"
 GC="\033[0;32m"
 R="\033[00m"
 
 _parse_git_dirty() {
-  if [[ -z "$(git status -s 2> /dev/null)" ]]; then
+  if git diff --no-ext-diff --quiet --exit-code; then
     printf "${GC}✔${R}"
   else
     printf "${RC}✗${R}"
@@ -39,7 +41,7 @@ prompt() {
 
     _top_row="\[${GC}\]\W\[${R}\]$(_parse_git_branch)\[${R}\]"
     [[ "$SSH_CONNECTION" != '' ]] && \
-      _top_row="\[${CC}\]\u\[${R}\]@\[${RC}\]\h\[${R}\]:${_top_row}"
+      _top_row="\[${USERC}\]\u\[${R}\]@\[${HOSTC}\]\h\[${R}\]:${_top_row}"
 
     _bottom_row="\[${color}\]❯\[${R}\] "
 
